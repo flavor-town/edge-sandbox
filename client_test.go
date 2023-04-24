@@ -152,6 +152,9 @@ func TestTxnHash(t *testing.T) {
 	blockNumber, _ := edge.evmClient.BlockNumber(edge.ctx)
 	log.Printf("Current Block Number: %d", blockNumber)
 
+	evmBlock1, _ := edge.evmClient.BlockByNumber(edge.ctx, big.NewInt(int64(blockNumber)))
+	log.Printf("Block %d has %d transactions", evmBlock1.Number(), len(evmBlock1.Transactions()))
+
 	// Get Current Balances
 	balance, _ := edge.evmClient.BalanceAt(edge.ctx, fromAddress, big.NewInt(int64(blockNumber)))
 	log.Printf("From: Available Balance: %+v -- %d", fromAddress, balance)
