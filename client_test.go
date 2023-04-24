@@ -125,7 +125,7 @@ func TestBlockHash(t *testing.T) {
 func TestTxnHash(t *testing.T) {
 	edge := NewEdgeTest()
 
-	// Generate Signer and Address
+	// Generate Signer
 	envPrivKey := os.Getenv("PRIVATE_KEY")
 	privateKey, err := crypto.HexToECDSA(envPrivKey)
 	if err != nil {
@@ -137,6 +137,7 @@ func TestTxnHash(t *testing.T) {
 		log.Fatal("error casting public key to ECDSA")
 	}
 
+	// Get addresses
 	fromAddress := crypto.PubkeyToAddress(*publicKeyECDSA)
 	nonce, err := edge.evmClient.PendingNonceAt(edge.ctx, fromAddress)
 	if err != nil {
@@ -144,21 +145,23 @@ func TestTxnHash(t *testing.T) {
 	}
 	toAddress := common.HexToAddress(os.Getenv("TO_ADDRESS"))
 	log.Printf("From Address: %+v", fromAddress)
-	log.Printf("Nonce: %d", nonce)
 	log.Printf("To   Address: %+v", toAddress)
+	log.Printf("Nonce: %d", nonce)
+
+	// Get current block number
+	blockNumber, _ := edge.evmClient.BlockNumber(edge.ctx)
+	log.Printf("Current Block Number: %d", blockNumber)
+
+	// Get Current Balances
+	balance, _ := edge.evmClient.BalanceAt(edge.ctx, fromAddress, big.NewInt(int64(blockNumber)))
+	log.Printf("From: Available Balance: %+v -- %d", fromAddress, balance)
+	balance, _ = edge.evmClient.BalanceAt(edge.ctx, toAddress, big.NewInt(int64(blockNumber)))
+	log.Printf("To:   Available Balance: %+v -- %d", toAddress, balance)
 
 	// Build txn params
 	value := big.NewInt(1)    // in wei
 	gasLimit := uint64(21000) // in units
 	gasPrice, _ := edge.evmClient.SuggestGasPrice(edge.ctx)
-
-	// Get current Block Number & Balances
-	blockNumber, _ := edge.evmClient.BlockNumber(edge.ctx)
-	log.Printf("Current Block Number: %d", blockNumber)
-	balance, _ := edge.evmClient.BalanceAt(edge.ctx, fromAddress, big.NewInt(int64(blockNumber)))
-	log.Printf("From: Available Balance: %+v -- %d", fromAddress, balance)
-	balance, _ = edge.evmClient.BalanceAt(edge.ctx, toAddress, big.NewInt(int64(blockNumber)))
-	log.Printf("To:   Available Balance: %+v -- %d", toAddress, balance)
 
 	// Build Transaction
 	var data []byte
@@ -206,7 +209,7 @@ func TestTxnHash(t *testing.T) {
 
 	for i := 0; i < len(rpcBlock.Transactions); i++ {
 		log.Printf("RPC hash (txn #%d): %s", i, rpcBlock.Transactions[i].Hash)
-		log.Printf("EVM hash (rxb #%d): %s", i, evmBlock.Transactions()[i].Hash().String())
+		log.Printf("EVM hash (txn #%d): %s", i, evmBlock.Transactions()[i].Hash().String())
 		assert.Equal(t, rpcBlock.Transactions[i].Hash, evmBlock.Transactions()[i].Hash().String())
 	}
 }
