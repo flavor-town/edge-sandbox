@@ -37,8 +37,8 @@ type EdgeTest struct {
 	rpcClient *rpc.Client
 }
 
-func (e *EdgeTest) setup(edgeUrl string) {
-	e.EdgeUrl = edgeUrl
+func (e *EdgeTest) setup() {
+	e.EdgeUrl = os.Getenv("EDGE_URL")
 
 	// Parse URL
 	parsedUrl, err := url.Parse(e.EdgeUrl)
@@ -69,7 +69,7 @@ func NewEdgeTest() EdgeTest {
 	}
 
 	e := EdgeTest{}
-	e.setup("http://localhost:10002") // REPLACE THIS WITH YOUR Edge Deployment URL
+	e.setup() // REPLACE THIS WITH YOUR Edge Deployment URL
 	return e
 }
 
