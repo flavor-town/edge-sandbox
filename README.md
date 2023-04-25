@@ -8,15 +8,15 @@ This repository is aimed to test blockchain interactions for a deployed [Polygon
 
 **Setup**
 
-- A running Supernets Instance
+1) A running Supernets Instance
     - Can be [local](https://wiki.polygon.technology/docs/supernets/operate/supernets-local-deploy-supernet)
 - `.env` -- Environment variables neede for testing
 
-* use [polycli](https://github.com/maticnetwork/polygon-cli) to generate wallets and save the wallet keys/addresses
+2) use [polycli](https://github.com/maticnetwork/polygon-cli) to generate wallets and save the wallet keys/addresses
 
 ```polycli wallet create --words 12 --language english | jq '.Addresses[:2]' > rootchain-wallet.json```
 
-* Use one of the addresses as part of genesis. 
+3) Use one of the addresses as part of genesis. 
 
 ``` ./polygon-edge geneisis {options} --premine <ADDRESS>:1000000000000000000000000000 ```
 
