@@ -216,3 +216,35 @@ func TestTxnHash(t *testing.T) {
 		assert.Equal(t, rpcBlock.Transactions[i].Hash, evmBlock.Transactions()[i].Hash().String())
 	}
 }
+
+func TestAllBlocks(t *testing.T) {
+	edge := NewEdgeTest()
+	// Get current block number
+	blockNumber, _ := edge.evmClient.BlockNumber(edge.ctx)
+	log.Printf("Current Block Number: %d", blockNumber)
+	log.Printf("Checking all blocks from 0 to %d", blockNumber)
+	for i := uint64(0); i < blockNumber; i++ {
+		bigBlockNumber := big.NewInt(int64(i))
+		// Get block data from block with confirmed TXN
+		var rpcBlock RPCResult
+		evmBlock, err := edge.evmClient.BlockByNumber(edge.ctx, bigBlockNumber)
+		if err != nil {
+			log.Fatalf("EVM: BlockByNumber: %+v", err)
+		}
+		log.Printf("EVM: BlockNumber %d has %d transactions", i, evmBlock.Transactions().Len())
+		for _, m := range evmBlock.Transactions() {
+			log.Printf("EVM: Block %d has tx hash %s", i, m.Hash().String())
+		}
+		err = edge.rpcClient.CallContext(edge.ctx, &rpcBlock, "eth_getBlockByNumber", "0x"+bigBlockNumber.Text(16), true)
+		if err != nil {
+			log.Fatalf("RPC: getBlockByNumber: %+v", err)
+		}
+		log.Printf("RPC: BlockNumber %d has %d transactions", i, len(rpcBlock.Transactions))
+		for _, m := range rpcBlock.Transactions {
+			log.Printf("RPC: Block %d has tx hash %s", i, m.Hash)
+		}
+		for n := 0; n < evmBlock.Transactions().Len(); n++ {
+			assert.Equal(t, evmBlock.Transactions()[n].Hash().String(), rpcBlock.Transactions[n].Hash)
+		}
+	}
+}

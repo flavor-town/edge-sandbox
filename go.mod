@@ -1,6 +1,6 @@
 module gihub.com/flavor-town/edge-sandbox
 
-go 1.20
+go 1.19
 
 require (
 	github.com/ethereum/go-ethereum v1.11.6
