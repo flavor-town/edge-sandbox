@@ -299,8 +299,10 @@ func TestEpochBlocks(t *testing.T) {
 
 		log.Println("==================== RPC --> PolyTxn ====================") // Should technically equal RawHash from RPC.
 		polyTxn = rawToPolyTxn(rpcTxn)
-		polyTxn.Type = polytypes.StateTx                                                  // If you uncomment this out, you'll see that the hases match the RPC node.
 		log.Printf("ArenaHash \t\t\t\t: %+v", arenaHash(polyTxn))                         // Convert rpcTxn -> polyTxn and manually generate hash
+		log.Printf("edgeTxn.ComputeHash(): \t: %+v", polyTxn.ComputeHash().Hash.String()) // Use built-in function (should be the same as above)
+		log.Println("===== txn.Type = StateTx =====")                                     // Should technically equal RawHash from RPC.
+		polyTxn.Type = polytypes.StateTx                                                  // If you uncomment this out, you'll see that the hases match the RPC node.
 		log.Printf("edgeTxn.ComputeHash(): \t: %+v", polyTxn.ComputeHash().Hash.String()) // Use built-in function (should be the same as above)
 
 		log.Println("==================== Geth --> PolyTxn ====================")
@@ -352,7 +354,7 @@ func gethToEdgeTxn(gt *ethtypes.Transaction) *polytypes.Transaction {
 		V:     big.NewInt(0), //gt.V(), 	   // Missing
 		R:     big.NewInt(0), //gt.R(),        // Missing
 		S:     big.NewInt(0), //gt.S(),        // Missing
-		// From:  polytypes.Address(gt.From.ToAddress()), // Missing
+		// From:  polytypes.Address(gt.From.ToAddress()), // Missing (neede for comuting txnHash)
 		Type: polytypes.TxType(gt.Type()),
 	}
 	return p
