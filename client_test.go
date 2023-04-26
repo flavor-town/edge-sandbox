@@ -294,9 +294,12 @@ func TestEpochBlocks(t *testing.T) {
 
 		log.Printf("ethClient hash\t\t\t: %+v", evmTxn.Hash().String())         // Use the txnHash given by the ethClient
 		log.Printf("RawHash from RPC \t\t: %+v", rpcTxn.Hash.ToHash().String()) // Raw Hash from RPC node
+		assert.Equal(t, polytypes.StateTx, polytypes.TxType(rpcTxn.Type.ToInt64()), "RPC: Epoch TXN should be a stateTx")
+		assert.Equal(t, polytypes.StateTx, polytypes.TxType(evmTxn.Type()), "GETH: Epoch TXN should be a stateTx")
 
 		log.Println("==================== RPC --> PolyTxn ====================") // Should technically equal RawHash from RPC.
 		polyTxn = rawToPolyTxn(rpcTxn)
+		polyTxn.Type = polytypes.StateTx                                                  // If you uncomment this out, you'll see that the hases match the RPC node.
 		log.Printf("ArenaHash \t\t\t\t: %+v", arenaHash(polyTxn))                         // Convert rpcTxn -> polyTxn and manually generate hash
 		log.Printf("edgeTxn.ComputeHash(): \t: %+v", polyTxn.ComputeHash().Hash.String()) // Use built-in function (should be the same as above)
 
@@ -325,8 +328,8 @@ func rawToPolyTxn(r *rpctypes.RawTransactionResponse) *polytypes.Transaction {
 		V:     r.V.ToBigInt(),
 		R:     r.R.ToBigInt(),
 		S:     r.S.ToBigInt(),
-		// From:  polytypes.Address(r.From.ToAddress()),
-		Type: polytypes.TxType(r.Type.ToInt64()),
+		From:  polytypes.Address(r.From.ToAddress()),
+		Type:  polytypes.TxType(r.Type.ToInt64()),
 	}
 
 	return p
