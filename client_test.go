@@ -274,23 +274,30 @@ func TestEpochBlocks(t *testing.T) {
 	edge := NewEdgeTest()
 	epochSize := big.NewInt(10) // Every epoch is configured to be 10 blocks
 
-	var rpcBlock rpctypes.RawBlockResponse
-
 	evmBlock, _ := edge.evmClient.BlockByNumber(edge.ctx, epochSize)
 	log.Printf("EVM: BlockNumber %d has %d transactions", evmBlock.Number(), evmBlock.Transactions().Len())
 	for _, m := range evmBlock.Transactions() {
 		log.Printf("EVM: Block %d has tx hash %s", evmBlock.Number(), m.Hash().String())
 	}
-
+	var rpcBlock rpctypes.RawBlockResponse
 	edge.rpcClient.CallContext(edge.ctx, &rpcBlock, "eth_getBlockByNumber", encodeBig(evmBlock.Number()), true)
+
+	var rpcResult RPCResult
+	edge.rpcClient.CallContext(edge.ctx, &rpcResult, "eth_getBlockByNumber", encodeBig(evmBlock.Number()), true)
 
 	var evmTxn *ethtypes.Transaction
 	var rpcTxn *rpctypes.RawTransactionResponse
 	var polyTxn *polytypes.Transaction
+	var rawRpcTxn *Transaction
 
 	for n := 0; n < evmBlock.Transactions().Len(); n++ {
 		evmTxn = evmBlock.Transactions()[n]
 		rpcTxn = &rpcBlock.Transactions[n]
+		rawRpcTxn = rpcResult.Transactions[n]
+
+		log.Printf("evm TXN Type: %+v", evmTxn.Type())
+		log.Printf("rpc TXN Type: %+v", rpcTxn.Type.String())
+		log.Printf("rawRPC TXN Type: %+v", rawRpcTxn.Type)
 
 		log.Printf("ethClient hash\t\t\t: %+v", evmTxn.Hash().String())         // Use the txnHash given by the ethClient
 		log.Printf("RawHash from RPC \t\t: %+v", rpcTxn.Hash.ToHash().String()) // Raw Hash from RPC node
