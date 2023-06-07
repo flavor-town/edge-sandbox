@@ -1,1 +1,5 @@
 .env
+out
+wallet*
+cache
+broadcast
